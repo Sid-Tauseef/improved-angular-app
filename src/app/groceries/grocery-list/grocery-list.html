@@ -1,7 +1,8 @@
 <div class="page">
   <h1>My Groceries</h1>
 
-  @if (groceries$ | async; as groceries) {
+  <!-- read the computed signal directly -->
+  @if (groceryService.groceries(); as groceries) {
     <div class="grid">
       @for (g of groceries; track g.id) {
         <div class="card" (click)="viewDetail(g)">
@@ -14,8 +15,10 @@
             <h3 class="name">{{ g.name }}</h3>
             <p class="qty">Quantity: {{ g.quantity }}</p>
           </div>
-        </div>
+        </div>  
       }
     </div>
+  } else {
+    <p>No groceries yet.</p>
   }
 </div>

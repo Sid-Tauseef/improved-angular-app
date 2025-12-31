@@ -1,4 +1,4 @@
-import { Injectable , signal,computed } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { Grocery } from '../models/grocery.model';
 
 @Injectable({
@@ -6,7 +6,7 @@ import { Grocery } from '../models/grocery.model';
 })
 export class GroceryService {
   // initial in-memory dataset (matches assignment hint)
-  private readonly _groceries = signal<Grocery[]> ([
+  private readonly _groceries = signal<Grocery[]>([
     {
       id: '1',
       name: 'Apple',
@@ -28,28 +28,37 @@ export class GroceryService {
   ]);
 
 
-  readonly groceries = computed(()=> this._groceries);
+  readonly groceries = computed(() => this._groceries());
 
-  constructor() {}
+  constructor() { }
 
 
-  getById(id:string): Grocery | undefined{
-    return this._groceries().find(g=> g.id === id)
+  getAll(): Grocery[] {
+    return this._groceries();
+  }
+
+
+  getById(id: string): Grocery | undefined {
+    return this._groceries().find(g => g.id === id)
   }
 
 
 
 
-  add(input : Omit<Grocery,'id'>):void{
-    if(!input.name.trim() || input.quantity <=0){
+  add(input: Omit<Grocery, 'id'>): void {
+    if (!input.name.trim() || input.quantity <= 0) {
       return;
     }
 
-    const newItem: Grocery ={
+    const newItem: Grocery = {
       ...input,
       id: crypto.randomUUID()
     };
 
-    this._groceries.update(list => [...list,newItem]);
+    this._groceries.update(list => [...list, newItem]);
+  }
+
+  delete(id: string): void {
+    this._groceries.update(list => list.filter(g => g.id !== id));
   }
 }
