@@ -1,0 +1,21 @@
+<div class="page">
+  <h1>My Groceries</h1>
+
+  @if (groceries$ | async; as groceries) {
+    <div class="grid">
+      @for (g of groceries; track g.id) {
+        <div class="card" (click)="viewDetail(g)">
+          @if (g.image) {
+            <div class="card-image">
+              <img [src]="g.image" [alt]="g.name" />
+            </div>
+          }
+          <div class="card-body">
+            <h3 class="name">{{ g.name }}</h3>
+            <p class="qty">Quantity: {{ g.quantity }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

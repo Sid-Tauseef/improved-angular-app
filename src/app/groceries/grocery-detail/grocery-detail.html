@@ -1,0 +1,18 @@
+@if (item) {
+  <section class="detail-page">
+    <button class="back" (click)="goBack()">← Back</button>
+
+    <div class="detail">
+      <div class="image">
+        <img [src]="item.image" [alt]="item.name" />
+      </div>
+
+      <div class="info">
+        <h1>{{ item.name }}</h1>
+        <p><strong>Current Stock</strong></p>
+        <p class="big">{{ item.quantity }}</p>
+        <p><strong>Item ID:</strong> {{ item.id }}</p>
+      </div>
+    </div>
+  </section>
+}
