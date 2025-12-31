@@ -1,6 +1,6 @@
-export interface Grocery {
-  id: number;
-  name: string;
-  quantity: number;
-  image?: string;
+export interface Grocery{
+  id:string;
+  name :string;
+  quantity:number;
+  image?:string;
 }
