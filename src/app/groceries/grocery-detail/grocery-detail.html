@@ -12,6 +12,11 @@
         <p><strong>Current Stock</strong></p>
         <p class="big">{{ item.quantity }}</p>
         <p><strong>Item ID:</strong> {{ item.id }}</p>
+
+
+        <button class="delete-btn" (click)="deleteItem()">
+          Delete
+        </button>
       </div>
     </div>
   </section>

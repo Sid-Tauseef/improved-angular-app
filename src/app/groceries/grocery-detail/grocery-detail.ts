@@ -37,4 +37,15 @@ export class GroceryDetailComponent {
   goBack(): void {
     this.router.navigate(['/']);
   }
+
+  deleteItem(): void {
+    if(!this.item) return;
+
+    const confirmed = confirm(`Are you sure you want to delete "${this.item.name}"?`);
+
+    if(!confirmed) return;
+
+    this.groceryService.delete(this.item.id);
+    this.router.navigate(['/']);
+  }
 }

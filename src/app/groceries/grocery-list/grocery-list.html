@@ -3,55 +3,35 @@
 
   <!-- ADD GROCERY FORM -->
   <div class="add-form">
-    <input
-      type="text"
-      placeholder="Item name"
-      #nameInput
-    />
+    <input type="text" placeholder="Item name" #nameInput />
+    <input type="number" placeholder="Quantity" min="1" #quantityInput />
+    <input type="text" placeholder="Image URL (optional)" #imageInput />
 
-    <input
-      type="number"
-      placeholder="Quantity"
-      min="1"
-      #quantityInput
-    />
-
-    <input
-      type="text"
-      placeholder="Image URL (optional)"
-      #imageInput
-    />
-
-    <button
-      (click)="addItem(
-        nameInput.value,
-        quantityInput.value,
-        imageInput.value
-      )"
-    >
+    <button (click)="addItem(nameInput.value, quantityInput.value, imageInput.value)">
       Add Grocery
     </button>
   </div>
 
   @if (groceryService.groceries().length > 0) {
-    <div class="grid">
-      @for (g of groceryService.groceries(); track g.id) {
-        <div class="card" (click)="viewDetail(g)">
-          @if (g.image) {
-            <div class="card-image">
-              <img [src]="g.image" [alt]="g.name" />
-            </div>
-          }
-
-          <div class="card-body">
-            <h3 class="name">{{ g.name }}</h3>
-            <p class="qty">Quantity: {{ g.quantity }}</p>
-          </div>
-        </div>
+  <div class="grid">
+    @for (g of groceryService.groceries(); track g.id) {
+    <div class="card" (click)="viewDetail(g)">
+      @if (g.image) {
+      <div class="card-image">
+        <img [src]="g.image" [alt]="g.name" />
+      </div>
       }
+
+      <div class="card-body">
+        <h3 class="name">{{ g.name }}</h3>
+        <p class="qty">Quantity: {{ g.quantity }}</p>
+
+        <button class="delete-btn" (click)="deleteItem(g.id,$event)">Delete</button>
+      </div>
     </div>
-  }
-  @else {
-    <p>No groceries yet.</p>
+    }
+  </div>
+  } @else {
+  <p>No groceries yet.</p>
   }
 </div>

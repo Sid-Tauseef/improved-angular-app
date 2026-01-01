@@ -30,4 +30,16 @@ export class GroceryListComponent {
         image: image?.trim() || undefined
       });
   }
+
+  deleteItem(id:string , event: Event):void{
+    
+    event.stopPropagation();
+    
+    const confirmed = confirm('Are you sure you want to delete this item?');
+    if(!confirmed){
+      return;
+    }
+    
+    this.groceryService.delete(id);
+  }
 } 
