@@ -36,6 +36,22 @@
   margin: 8px 0 16px;
 }
 
+.delete-btn{
+  margin-top: 24px;
+  padding : 12px 24px;
+  background-color: #dc2626;
+  color: white ;
+  border:  none;
+  border-radius: 8px;
+  cursor:pointer;
+  font-weight: 600;
+}
+
+.delete-btn:hover{
+  background-color: #b91c1c;
+}
+
+
 /* MOBILE */
 @media (max-width: 800px) {
   .detail {
