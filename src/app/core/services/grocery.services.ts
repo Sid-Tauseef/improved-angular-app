@@ -1,64 +1,50 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Grocery } from '../models/grocery.model';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class GroceryService {
-  // initial in-memory dataset (matches assignment hint)
-  private readonly _groceries = signal<Grocery[]>([
-    {
-      id: '1',
-      name: 'Apple',
-      quantity: 5,
-      image: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=800&q=60'
-    },
-    {
-      id: '2',
-      name: 'Milk',
-      quantity: 2,
-      image: 'https://images.unsplash.com/photo-1634141510639-d691d86f47be?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bWlsa3xlbnwwfHwwfHx8MA%3D%3D'
-    },
-    {
-      id: '3',
-      name: 'Bread',
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1598373182133-52452f7691ef?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-    }
-  ]);
+
+  private readonly http = inject(HttpClient);
+  private readonly API_URL = 'http://localhost:3000/groceries';
+  
+  private readonly _groceries = signal<Grocery[]>([]);
+  readonly groceries = this._groceries.asReadonly();
 
 
-  readonly groceries = computed(() => this._groceries());
-
-  constructor() { }
-
-
-  getAll(): Grocery[] {
-    return this._groceries();
+  load(): void{
+    this.http.get<Grocery[]>(this.API_URL).subscribe({
+      next: data => this._groceries.set(data),
+      error: err => alert('Failed to load groceries: ' + err.message)
+    });
   }
-
-
-  getById(id: string): Grocery | undefined {
-    return this._groceries().find(g => g.id === id)
-  }
-
-
-
 
   add(input: Omit<Grocery, 'id'>): void {
-    if (!input.name.trim() || input.quantity <= 0) {
-      return;
-    }
-
-    const newItem: Grocery = {
-      ...input,
-      id: crypto.randomUUID()
-    };
-
-    this._groceries.update(list => [...list, newItem]);
+    this.http.post<Grocery>(this.API_URL,input).subscribe({
+      next: created =>{
+        this._groceries.update(list => [...list,created]);
+      }
+    });
   }
 
   delete(id: string): void {
-    this._groceries.update(list => list.filter(g => g.id !== id));
+
+    this.http.delete(`${this.API_URL}/${id}`).subscribe({
+      next: ()=>{
+        this._groceries.update(list => list.filter(item => item.id !== id));
+      }
+    });
+  }
+
+  update(id: string, changes: Partial<Omit<Grocery, 'id'>>): void {
+    this.http.patch<Grocery>(`${this.API_URL}/${id}`,changes).subscribe({
+      next:updated =>{
+        this._groceries.update((list) =>
+          list.map((item)=> item.id === id ? updated : item)
+        );
+      }
+    });
   }
 }

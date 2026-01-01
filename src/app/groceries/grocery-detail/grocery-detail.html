@@ -1,23 +1,60 @@
-@if (item) {
-  <section class="detail-page">
-    <button class="back" (click)="goBack()">← Back</button>
+@if (item()) {
+<div class="detail-page">
+  <!-- Back -->
+  <button class="back" (click)="goBack()">← Back</button>
 
-    <div class="detail">
-      <div class="image">
-        <img [src]="item.image" [alt]="item.name" />
-      </div>
+  <div class="detail">
+    <!-- Image -->
+    <div class="image">
+      <img [src]="item()!.image" [alt]="item()!.name" />
+    </div>
 
-      <div class="info">
-        <h1>{{ item.name }}</h1>
-        <p><strong>Current Stock</strong></p>
-        <p class="big">{{ item.quantity }}</p>
-        <p><strong>Item ID:</strong> {{ item.id }}</p>
+    <!-- Info -->
+    <div class="info">
+      <!-- Name -->
+      @if (!isEditing) {
+      <h1>{{ item()!.name }}</h1>
+      } @else {
+      <input
+        type="text"
+        class="input-field"
+        [value]="editedName"
+        (input)="editedName = $any($event.target).value"
+        placeholder="Item name"
+      />
+      }
 
+      <!-- Quantity -->
+      @if (!isEditing) {
+      <p><strong>Current Stock</strong></p>
+      <p class="big">{{ item()!.quantity }}</p>
+      } @else {
+      <p><strong>Quantity</strong></p>
+      <input
+        type="number"
+        class="input-field"
+        [value]="editedQuantity"
+        (input)="editedQuantity = +$any($event.target).value"
+        min="1"
+      />
+      }
 
-        <button class="delete-btn" (click)="deleteItem()">
-          Delete
-        </button>
+      <!-- Item ID (view-only) -->
+      <p><strong>Item ID:</strong> {{ item()!.id }}</p>
+
+      <!-- Actions -->
+      <div class="actions">
+        @if (!isEditing) {
+        <button class="edit-btn" (click)="startEdit()">Edit</button>
+
+        <button class="delete-btn" (click)="deleteItem()">Delete</button>
+        } @else {
+        <button class="save-btn" (click)="saveEdit()">Save</button>
+
+        <button class="cancel-btn" (click)="cancelEdit()">Cancel</button>
+        }
       </div>
     </div>
-  </section>
+  </div>
+</div>
 }

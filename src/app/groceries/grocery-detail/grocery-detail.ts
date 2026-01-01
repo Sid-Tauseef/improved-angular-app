@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { GroceryService } from '../../core/services/grocery.services';
@@ -17,21 +17,24 @@ export class GroceryDetailComponent {
   private router = inject(Router);
   private groceryService = inject(GroceryService);
 
-  item?: Grocery;
+  // item?: Grocery;
+  private readonly id = this.route.snapshot.paramMap.get('id');
+
+  readonly item = computed<Grocery | undefined>(()=>{
+    if(!this.id) return undefined;
+    return this.groceryService.groceries().find(g=> g.id === this.id);
+  });
+
+  isEditing = false;
+
+  editedName = '';
+  editedQuantity = 0;
+  editedImage = '';
 
   constructor() {
-    const id = this.route.snapshot.paramMap.get('id');
-
-    if(!id){
+    if(!this.id){
       this.router.navigate(['/']);
-      return;
-    }  
-
-    this.item = this.groceryService.getById(id);
-
-    if(!this.item){
-      this.router.navigate(['/']);
-    }
+    } 
   }
 
   goBack(): void {
@@ -39,13 +42,47 @@ export class GroceryDetailComponent {
   }
 
   deleteItem(): void {
-    if(!this.item) return;
+    const current = this.item();
+    if(!current) return;
 
-    const confirmed = confirm(`Are you sure you want to delete "${this.item.name}"?`);
+    const confirmed = confirm(`Are you sure you want to delete "${current.name}"?`);
 
     if(!confirmed) return;
 
-    this.groceryService.delete(this.item.id);
+    this.groceryService.delete(current.id);
     this.router.navigate(['/']);
+  }
+
+
+  startEdit():void{
+    const current = this.item();
+    if(!current) return;
+
+    this.editedName = current.name;
+    this.editedQuantity = current.quantity;
+    this.editedImage = current.image || '';
+    this.isEditing = true;
+  }
+
+  cancelEdit():void{
+    this.isEditing = false;
+  }
+
+  saveEdit():void{
+    const current = this.item();
+    if(!current) return;
+
+    if(!this.editedName.trim() || this.editedQuantity <=0){
+      alert("Invalid Values Provided");
+      return;
+    }
+
+    this.groceryService.update(current.id,{
+      name: this.editedName.trim(),
+      quantity: this.editedQuantity,
+      image: this.editedImage.trim() || undefined
+    });
+
+    this.isEditing = false;
   }
 }
