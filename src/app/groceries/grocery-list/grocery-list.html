@@ -1,5 +1,11 @@
 <div class="page">
-  <h1>My Groceries</h1>
+  <div class="header">
+    <h1>My Groceries</h1>
+    <div class="stats">
+      <span class="stat-item">Total Items: {{ groceryService.groceries().length }}</span>
+      <span class="stat-item low-stock">Low Stock: {{ lowStockCount() }}</span>
+    </div>
+  </div>
 
   <form
     class="add-form"
@@ -22,17 +28,66 @@
     </div>
 
     <div>
+      <select formControlName="category">
+        <option value="" disabled>Select category</option>
+        @for (cat of categories; track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+    </div>
+
+    <div>
+      <input type="number" min="0" placeholder="Low stock alert (default: 5)" formControlName="lowStockThreshold" />
+    </div>
+
+    <div class="full-width">
+      <input type="text" placeholder="Notes (optional)" formControlName="notes" />
+    </div>
+
+    <div class="full-width">
       <input type="text" placeholder="Image URL (optional)" formControlName="image" />
     </div>
 
-    <button type="submit" [disabled]="addForm.invalid">
+    <button type="submit" [disabled]="addForm.invalid" class="full-width">
       Add Grocery
     </button>
   </form>
 
-  @if (groceryService.groceries().length > 0) {
+  <div class="controls">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search groceries..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)"
+      />
+    </div>
+
+    <div class="filter-box">
+      <select [value]="filterCategory()" (change)="filterCategory.set($any($event.target).value)">
+        <option value="">All Categories</option>
+        @for (cat of categories; track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="sort-box">
+      <select [value]="sortBy()" (change)="sortBy.set($any($event.target).value)">
+        <option value="name">Sort by Name</option>
+        <option value="quantity">Sort by Quantity</option>
+        <option value="category">Sort by Category</option>
+      </select>
+    </div>
+
+    <button class="clear-filters-btn" (click)="clearFilters()">
+      Clear Filters
+    </button>
+  </div>
+
+  @if (filteredGroceries().length > 0) {
     <div class="grid">
-      @for (g of groceryService.groceries(); track g.id) {
+      @for (g of filteredGroceries(); track g.id) {
         <app-grocery-card
           [item]="g"
           (view)="viewDetail($event)"
@@ -41,6 +96,10 @@
       }
     </div>
   } @else {
-    <p>No groceries yet.</p>
+    @if (groceryService.groceries().length === 0) {
+      <p class="empty-state">No groceries yet. Add your first item above!</p>
+    } @else {
+      <p class="empty-state">No groceries match your search criteria.</p>
+    }
   }
 </div>

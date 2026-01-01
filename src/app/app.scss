@@ -2,15 +2,17 @@
   padding: 16px 24px;
   border-bottom: 1px solid #e5e7eb;
   background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .app-header h1 {
   margin: 0;
   font-size: 1.8rem;
+  color: #2b6a3b;
 }
 
 .app-main {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 16px;
 }

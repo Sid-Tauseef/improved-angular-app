@@ -7,14 +7,12 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class GroceryService {
-
   private readonly http = inject(HttpClient);
   private readonly API_URL = 'http://localhost:3000/groceries';
 
   private readonly _groceries = signal<Grocery[]>([]);
   readonly groceries = this._groceries.asReadonly();
 
-  /* ---------- LIST ---------- */
   load(): void {
     this.http.get<Grocery[]>(this.API_URL).subscribe({
       next: data => this._groceries.set(data),
@@ -22,12 +20,10 @@ export class GroceryService {
     });
   }
 
-  /* ---------- GET BY ID ---------- */
   getById(id: string): Observable<Grocery> {
     return this.http.get<Grocery>(`${this.API_URL}/${id}`);
   }
 
-  /* ---------- ADD ---------- */
   add(input: Omit<Grocery, 'id'>): void {
     this.http.post<Grocery>(this.API_URL, input).subscribe({
       next: created => {
@@ -36,22 +32,15 @@ export class GroceryService {
     });
   }
 
-  /* ---------- DELETE ---------- */
   delete(id: string): void {
     this.http.delete(`${this.API_URL}/${id}`).subscribe({
       next: () => {
-        this._groceries.update(list =>
-          list.filter(item => item.id !== id)
-        );
+        this._groceries.update(list => list.filter(item => item.id !== id));
       },
     });
   }
 
-  /* ---------- UPDATE ---------- */
-  update(
-    id: string,
-    changes: Partial<Omit<Grocery, 'id'>>
-  ): void {
+  update(id: string, changes: Partial<Omit<Grocery, 'id'>>): void {
     this.http.patch<Grocery>(`${this.API_URL}/${id}`, changes).subscribe({
       next: updated => {
         this._groceries.update(list =>

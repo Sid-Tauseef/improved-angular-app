@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Grocery } from '../../core/models/grocery.model';
 
@@ -10,12 +10,25 @@ import { Grocery } from '../../core/models/grocery.model';
   styleUrl: './grocery-card.scss',
 })
 export class GroceryCardComponent {
+  @Input({ required: true }) set item(value: Grocery) {
+    this._item.set(value);
+  }
 
-  @Input({ required: true }) item!: Grocery;
+  get item(): Grocery {
+    return this._item();
+  }
+
   @Output() view = new EventEmitter<Grocery>();
   @Output() delete = new EventEmitter<string>();
 
-  readonly fallbackImage = 'assets/default-grocery.png';
+  private readonly _item = signal<Grocery>({} as Grocery);
+  readonly fallbackImage = 'assets/default-grocery.jpg';
+
+  readonly isLowStock = computed(() => {
+    const item = this._item();
+    const threshold = item.lowStockThreshold ?? 5;
+    return item.quantity <= threshold;
+  });
 
   onView(): void {
     this.view.emit(this.item);

@@ -1,4 +1,8 @@
 <div class="card" (click)="onView()">
+  @if (isLowStock()) {
+    <div class="low-stock-badge">Low Stock</div>
+  }
+
   <div class="card-image">
     <img
       [src]="item.image || fallbackImage"
@@ -8,8 +12,15 @@
   </div>
 
   <div class="card-body">
+    <div class="category-badge">{{ item.category }}</div>
     <h3 class="name">{{ item.name }}</h3>
-    <p class="qty">Quantity: {{ item.quantity }}</p>
+    <p class="qty" [class.low-stock-text]="isLowStock()">
+      Quantity: {{ item.quantity }}
+    </p>
+
+    @if (item.notes) {
+      <p class="notes">{{ item.notes }}</p>
+    }
 
     <button class="delete-btn" (click)="onDelete($event)">
       Delete

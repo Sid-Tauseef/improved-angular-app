@@ -13,9 +13,7 @@ export function uniqueGroceryNameValidator(
 
     const exists = groceryService
       .groceries()
-      .some(
-        g => g.name.trim().toLowerCase() === value
-      );
+      .some(g => g.name.trim().toLowerCase() === value);
 
     return exists ? { duplicateName: true } : null;
   };
