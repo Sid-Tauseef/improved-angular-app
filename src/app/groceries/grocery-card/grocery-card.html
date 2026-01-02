@@ -13,7 +13,9 @@
 
   <div class="card-body">
     <div class="category-badge">{{ item.category }}</div>
+
     <h3 class="name">{{ item.name }}</h3>
+
     <p class="qty" [class.low-stock-text]="isLowStock()">
       Quantity: {{ item.quantity }}
     </p>
@@ -22,8 +24,18 @@
       <p class="notes">{{ item.notes }}</p>
     }
 
-    <button class="delete-btn" (click)="onDelete($event)">
-      Delete
-    </button>
+    <div class="actions">
+      <button
+        type="button"
+        class="icon-btn delete"
+        title="Delete item"
+        (click)="onDelete($event)"
+      >
+        <img
+          src="/assets/icons/delete.png"
+          alt="Delete"
+        />
+      </button>
+    </div>
   </div>
 </div>

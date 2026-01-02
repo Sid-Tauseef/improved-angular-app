@@ -1,13 +1,20 @@
 @if (item()) {
 <div class="detail-page">
-  <button class="back" (click)="goBack()">← Back</button>
+
+  <button class="back" (click)="goBack()">
+    <img src="assets/icons/previous.png" alt="" />Back</button>
 
   <div class="detail">
+
     <div class="image">
-      <img [src]="item()!.image || fallbackImage" [alt]="item()!.name" />
+      <img
+        [src]="item()!.image || fallbackImage"
+        [alt]="item()!.name"
+      />
     </div>
 
     <div class="info">
+
       @if (!isEditing) {
         <div class="category-badge">{{ item()!.category }}</div>
         <h1>{{ item()!.name }}</h1>
@@ -18,7 +25,7 @@
             {{ item()!.quantity }}
           </p>
           @if (isLowStock()) {
-            <p class="low-stock-warning">⚠️ Low stock alert</p>
+            <p class="low-stock-warning">Low stock alert</p>
           }
         </div>
 
@@ -38,87 +45,65 @@
           <p class="label">Item ID</p>
           <p class="item-id">{{ item()!.id }}</p>
         </div>
-      } @else {
-        <div class="edit-form">
+      }
+
+      @else {
+        <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="edit-form">
+
           <div class="form-group">
-            <label>Name</label>
-            <input
-              type="text"
-              class="input-field"
-              [value]="editedName"
-              (input)="editedName = $any($event.target).value"
-              placeholder="Item name"
-            />
+            <label for="name">Name</label>
+            <input id="name" class="input-field" formControlName="name" type="text" />
+            <small class="error" *ngIf="controlHasError('name','required')">Name is required</small>
+            <small class="error" *ngIf="controlHasError('name','duplicateName')">An item with this name already exists</small>
           </div>
 
           <div class="form-group">
-            <label>Category</label>
-            <select
-              class="input-field"
-              [value]="editedCategory"
-              (change)="editedCategory = $any($event.target).value"
-            >
+            <label for="category">Category</label>
+            <select id="category" class="input-field" formControlName="category">
+              <option value="" disabled>Select category</option>
               @for (cat of categories; track cat) {
                 <option [value]="cat">{{ cat }}</option>
               }
             </select>
+            <small class="error" *ngIf="controlHasError('category','required')">Category is required</small>
           </div>
 
           <div class="form-group">
-            <label>Quantity</label>
-            <input
-              type="number"
-              class="input-field"
-              [value]="editedQuantity"
-              (input)="editedQuantity = +$any($event.target).value"
-              min="0"
-            />
+            <label for="quantity">Quantity</label>
+            <input id="quantity" class="input-field" formControlName="quantity" type="number" min="0" />
+            <small class="error" *ngIf="controlHasError('quantity','required')">Quantity is required</small>
+            <small class="error" *ngIf="controlHasError('quantity','min')">Quantity must be >= 0</small>
           </div>
 
           <div class="form-group">
-            <label>Low Stock Threshold</label>
-            <input
-              type="number"
-              class="input-field"
-              [value]="editedLowStockThreshold"
-              (input)="editedLowStockThreshold = +$any($event.target).value"
-              min="0"
-            />
+            <label for="lowStockThreshold">Low Stock Threshold</label>
+            <input id="lowStockThreshold" class="input-field" formControlName="lowStockThreshold" type="number" min="0" />
+            <small class="error" *ngIf="controlHasError('lowStockThreshold','min')">Threshold must be >= 0</small>
           </div>
 
           <div class="form-group">
-            <label>Notes</label>
-            <textarea
-              class="input-field textarea"
-              [value]="editedNotes"
-              (input)="editedNotes = $any($event.target).value"
-              placeholder="Add notes about this item..."
-              rows="3"
-            ></textarea>
+            <label for="notes">Notes</label>
+            <textarea id="notes" class="input-field textarea" formControlName="notes" rows="3"></textarea>
           </div>
 
           <div class="form-group">
-            <label>Image URL</label>
-            <input
-              type="text"
-              class="input-field"
-              [value]="editedImage"
-              (input)="editedImage = $any($event.target).value"
-              placeholder="Image URL"
-            />
+            <label for="image">Image URL</label>
+            <input id="image" class="input-field" formControlName="image" type="text" />
           </div>
-        </div>
+
+        </form>
       }
 
       <div class="actions">
         @if (!isEditing) {
-          <button class="edit-btn" (click)="startEdit()">Edit</button>
-          <button class="delete-btn" (click)="deleteItem()">Delete</button>
+          <button class="edit-btn" (click)="startEdit()"><img src="assets/icons/edit.png" alt="" /></button>
+          <button class="delete-btn" (click)="deleteItem()"><img src="assets/icons/delete.png" alt="" /></button>
         } @else {
-          <button class="save-btn" (click)="saveEdit()">Save</button>
-          <button class="cancel-btn" (click)="cancelEdit()">Cancel</button>
+          <button type="submit" class="save-btn" [disabled]="editForm.invalid" (click)="saveEdit()">Save</button>
+          <button type="button" class="cancel-btn" (click)="cancelEdit()">Cancel</button>
         }
       </div>
+
     </div>
   </div>
 </div>

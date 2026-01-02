@@ -1,14 +1,21 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  FormGroup,
+} from '@angular/forms';
 
 import { GroceryService } from '../../core/services/grocery.services';
 import { Grocery, GROCERY_CATEGORIES } from '../../core/models/grocery.model';
+import { uniqueGroceryNameValidator } from '../../core/validators/unique-grocery-name.validator';
 
 @Component({
   selector: 'app-grocery-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './grocery-detail.html',
   styleUrl: './grocery-detail.scss',
 })
@@ -16,6 +23,7 @@ export class GroceryDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly groceryService = inject(GroceryService);
+  private readonly fb = inject(FormBuilder);
 
   readonly item = signal<Grocery | null>(null);
   readonly categories = GROCERY_CATEGORIES;
@@ -23,24 +31,22 @@ export class GroceryDetailComponent {
 
   isEditing = false;
 
-  editedName = '';
-  editedQuantity = 0;
-  editedCategory = '';
-  editedLowStockThreshold = 5;
-  editedNotes = '';
-  editedImage = '';
+  readonly editForm: FormGroup = this.fb.nonNullable.group({
+    name: ['', Validators.required],
+    quantity: [0, [Validators.required, Validators.min(0)]],
+    category: ['', Validators.required],
+    lowStockThreshold: [5, Validators.min(0)],
+    notes: [''],
+    image: [''],
+  });
 
   readonly isLowStock = computed(() => {
     const current = this.item();
-    if (!current) return false;
-
-    const threshold = current.lowStockThreshold ?? 5;
-    return current.quantity <= threshold;
+    return !!current && current.quantity <= (current.lowStockThreshold ?? 5);
   });
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
-
     if (!id) {
       this.router.navigate(['/']);
       return;
@@ -48,10 +54,7 @@ export class GroceryDetailComponent {
 
     this.groceryService.getById(id).subscribe({
       next: data => this.item.set(data),
-      error: () => {
-        alert('Grocery item not found');
-        this.router.navigate(['/']);
-      },
+      error: () => this.router.navigate(['/']),
     });
   }
 
@@ -59,68 +62,73 @@ export class GroceryDetailComponent {
     this.router.navigate(['/']);
   }
 
-  deleteItem(): void {
-    const current = this.item();
-    if (!current) return;
-
-    const confirmed = confirm(
-      `Are you sure you want to delete "${current.name}"?`
-    );
-    if (!confirmed) return;
-
-    this.groceryService.delete(current.id);
-    this.router.navigate(['/']);
-  }
-
   startEdit(): void {
     const current = this.item();
     if (!current) return;
 
-    this.editedName = current.name;
-    this.editedQuantity = current.quantity;
-    this.editedCategory = current.category;
-    this.editedLowStockThreshold = current.lowStockThreshold ?? 5;
-    this.editedNotes = current.notes || '';
-    this.editedImage = current.image || '';
+    this.editForm.patchValue({
+      name: current.name,
+      quantity: current.quantity,
+      category: current.category,
+      lowStockThreshold: current.lowStockThreshold ?? 5,
+      notes: current.notes ?? '',
+      image: current.image ?? '',
+    });
+
+    const nameControl = this.editForm.controls['name'];
+    nameControl.setValidators([
+      Validators.required,
+      uniqueGroceryNameValidator(this.groceryService, current.id),
+    ]);
+    nameControl.updateValueAndValidity({ emitEvent: false });
+
     this.isEditing = true;
   }
 
   cancelEdit(): void {
     this.isEditing = false;
+
+    this.editForm.controls['name'].setValidators([Validators.required]);
+    this.editForm.controls['name'].updateValueAndValidity({ emitEvent: false });
   }
 
   saveEdit(): void {
-    const current = this.item();
-    if (!current) return;
-
-    if (
-      !this.editedName.trim() ||
-      this.editedQuantity < 0 ||
-      !this.editedCategory
-    ) {
-      alert('Please fill in all required fields with valid values');
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
       return;
     }
 
-    this.groceryService.update(current.id, {
-      name: this.editedName.trim(),
-      quantity: this.editedQuantity,
-      category: this.editedCategory,
-      lowStockThreshold: this.editedLowStockThreshold,
-      notes: this.editedNotes.trim() || undefined,
-      image: this.editedImage.trim() || undefined,
-    });
+    const current = this.item();
+    if (!current) return;
 
-    this.item.set({
-      ...current,
-      name: this.editedName.trim(),
-      quantity: this.editedQuantity,
-      category: this.editedCategory,
-      lowStockThreshold: this.editedLowStockThreshold,
-      notes: this.editedNotes.trim() || undefined,
-      image: this.editedImage.trim() || undefined,
-    });
+    const payload = {
+      ...this.editForm.getRawValue(),
+      notes: this.editForm.value.notes?.trim() || undefined,
+      image: this.editForm.value.image?.trim() || undefined,
+    };
+
+    this.groceryService.update(current.id, payload);
+
+    this.item.set({ ...current, ...payload });
 
     this.isEditing = false;
+
+    this.editForm.controls['name'].setValidators([Validators.required]);
+    this.editForm.controls['name'].updateValueAndValidity({ emitEvent: false });
+  }
+
+  deleteItem(): void {
+    const current = this.item();
+    if (!current) return;
+
+    if (confirm(`Delete "${current.name}"?`)) {
+      this.groceryService.delete(current.id);
+      this.router.navigate(['/']);
+    }
+  }
+
+  controlHasError(control: string, error: string): boolean {
+    const c = this.editForm.get(control);
+    return !!c && c.touched && c.hasError(error);
   }
 }
