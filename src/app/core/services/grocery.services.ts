@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class GroceryService {
   private readonly http = inject(HttpClient);
-  private readonly API_URL = 'http://localhost:3000/groceries';
+  private readonly API_URL = 'https://grocery-api-psi.vercel.app/groceries';
 
   private readonly _groceries = signal<Grocery[]>([]);
   readonly groceries = this._groceries.asReadonly();
